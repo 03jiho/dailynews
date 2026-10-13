@@ -27,6 +27,12 @@ def test_parse_json_array_handles_code_fence_and_chatter():
     assert parse_json_array(raw) == [{"cluster": "C1"}]
 
 
+def test_parse_json_array_accepts_json_mode_object():
+    assert parse_json_array('{"items": [{"cluster": "C1", "summary": "\\"인용\\" 포함"}]}') == [
+        {"cluster": "C1", "summary": '"인용" 포함'}
+    ]
+
+
 def test_evidence_must_be_verbatim():
     cluster = cluster_articles(RATE)[0]
     ok, bad = check_evidence([{"source": 1, "quote": "기준금리를 연 2.50%로 유지"}], cluster)

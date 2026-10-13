@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from .models import Cluster
 
-PROMPT_VERSION = "v2"
+PROMPT_VERSION = "v3"
 
 CATEGORIES = ["정치", "경제", "사회", "국제", "IT·과학", "문화·스포츠", "기타"]
 
@@ -21,9 +21,9 @@ SYSTEM_PROMPT = """당신은 한국어 뉴스 브리핑 편집자입니다. 같�
 9. 출처가 "내 수집함"인 항목은 사용자가 SNS 등에서 직접 공유한 소식입니다. 다른 출처와 똑같이 입력에 있는 내용만 쓰되, 확인된 보도가 아닐 수 있으므로 단정하지 말고 "공유된 소식에 따르면"처럼 표현합니다.
 
 ## 출력 형식
-설명이나 코드블록 없이 JSON 배열만 출력합니다. 입력의 각 사건(C1, C2, ...)마다 객체 하나를 입력 순서대로 만듭니다.
+설명이나 코드블록 없이 JSON 객체만 출력합니다. items 배열에 입력의 각 사건(C1, C2, ...)마다 객체 하나를 입력 순서대로 넣습니다.
 
-[
+{"items": [
   {
     "cluster": "C1",
     "headline": "...",
@@ -32,7 +32,7 @@ SYSTEM_PROMPT = """당신은 한국어 뉴스 브리핑 편집자입니다. 같�
     "differences": null,
     "evidence": [{"source": 1, "quote": "..."}]
   }
-]
+]}
 
 ## 필드 규칙
 - headline: 40자 이내. 무슨 일이 일어났는지 드러나는 사실형 제목. 낚시성 표현 금지.

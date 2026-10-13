@@ -28,7 +28,7 @@ class OpenAICompatibleLLM:
         base_url: str,
         api_key: str,
         model: str,
-        max_tokens: int = 3000,
+        max_tokens: int = 8192,  # Gemini 3.x는 생각(thinking) 토큰도 여기서 써서 3000이면 응답이 잘린다
         timeout: int = 90,
         max_attempts: int = 4,
     ):
@@ -47,6 +47,8 @@ class OpenAICompatibleLLM:
                 {"role": "system", "content": system},
                 {"role": "user", "content": user},
             ],
+            # JSON 모드: 따옴표 이스케이프 누락 같은 문법 오류를 막는다 (최상위는 객체여야 함)
+            "response_format": {"type": "json_object"},
         }
         headers = {"Authorization": f"Bearer {self.api_key}"}
         for attempt in range(1, self.max_attempts + 1):
@@ -59,7 +61,10 @@ class OpenAICompatibleLLM:
                 continue
             resp.raise_for_status()
             data = resp.json()
-            text = data["choices"][0]["message"].get("content") or ""
+            choice = data["choices"][0]
+            if choice.get("finish_reason") == "length":
+                raise RuntimeError(f"응답이 max_tokens({self.max_tokens})에서 잘림")
+            text = choice["message"].get("content") or ""
             usage = data.get("usage") or {}
             return text, {
                 "input_tokens": usage.get("prompt_tokens", 0),

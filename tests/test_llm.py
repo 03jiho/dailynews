@@ -31,13 +31,20 @@ def test_openai_compatible_parses_text_and_usage(monkeypatch):
     seen = {}
 
     def fake_post(url, json, headers, timeout):
-        seen.update(url=url, auth=headers["Authorization"], model=json["model"], roles=[m["role"] for m in json["messages"]])
+        seen.update(url=url, auth=headers["Authorization"], model=json["model"], roles=[m["role"] for m in json["messages"]], fmt=json["response_format"]["type"])
         return FakeResp(200, OK_BODY)
 
     monkeypatch.setattr(llm_mod.requests, "post", fake_post)
     text, usage = OpenAICompatibleLLM("https://x.test/v1/", "KEY", "m1")("sys", "user")
     assert text == "[]" and usage == {"input_tokens": 12, "output_tokens": 3}
-    assert seen == {"url": "https://x.test/v1/chat/completions", "auth": "Bearer KEY", "model": "m1", "roles": ["system", "user"]}
+    assert seen == {"url": "https://x.test/v1/chat/completions", "auth": "Bearer KEY", "model": "m1", "roles": ["system", "user"], "fmt": "json_object"}
+
+
+def test_truncated_response_raises_instead_of_returning_broken_json(monkeypatch):
+    body = {"choices": [{"message": {"content": '{"items": [{"clus'}, "finish_reason": "length"}]}
+    monkeypatch.setattr(llm_mod.requests, "post", lambda *a, **k: FakeResp(200, body))
+    with pytest.raises(RuntimeError, match="잘림"):
+        OpenAICompatibleLLM("https://x.test/v1/", "KEY", "m1")("sys", "user")
 
 
 def test_retries_on_rate_limit_then_succeeds(monkeypatch):

@@ -15,10 +15,17 @@ LLMCall = Callable[[str, str], tuple[str, dict]]
 
 
 def parse_json_array(text: str) -> list[dict]:
-    start, end = text.find("["), text.rfind("]")
-    if start == -1 or end <= start:
-        raise ValueError("JSON 배열을 찾지 못했습니다")
+    """{"items": [...]} (JSON 모드) 또는 맨 배열 [...] 응답에서 사건 목록을 꺼낸다."""
+    starts = [i for i in (text.find("["), text.find("{")) if i != -1]
+    if not starts:
+        raise ValueError("JSON을 찾지 못했습니다")
+    start = min(starts)
+    end = text.rfind("]" if text[start] == "[" else "}")
+    if end <= start:
+        raise ValueError("JSON을 찾지 못했습니다")
     data = json.loads(text[start : end + 1])
+    if isinstance(data, dict):
+        data = data.get("items")
     if not isinstance(data, list):
         raise ValueError("JSON 최상위가 배열이 아닙니다")
     return [d for d in data if isinstance(d, dict)]
