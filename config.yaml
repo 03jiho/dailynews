@@ -1,0 +1,40 @@
+# 피드 주소는 언론사 사정으로 바뀔 수 있습니다.
+# 처음 한 번 `python -m briefing check-feeds`로 수집되는지 확인하세요. 실패한 매체는 자동으로 건너뜁니다.
+# 성향이 다른 매체를 섞어 두면 '매체별 관점 차이' 기능이 잘 드러납니다.
+feeds:
+  - name: 연합뉴스
+    url: https://www.yna.co.kr/rss/news.xml
+  - name: 한겨레
+    url: https://www.hani.co.kr/rss/
+  - name: 경향신문
+    url: https://www.khan.co.kr/rss/rssdata/total_news.xml
+  - name: 동아일보
+    url: https://rss.donga.com/total.xml
+  - name: 조선일보
+    url: https://www.chosun.com/arc/outboundfeeds/rss/?outputType=xml
+  - name: 매일경제
+    url: https://www.mk.co.kr/rss/30000001/
+  - name: 한국경제
+    url: https://www.hankyung.com/feed/all-news
+  - name: JTBC
+    url: https://news-ex.jtbc.co.kr/v1/get/rss/newsflesh  # JTBC 공식 RSS 목록상 철자가 newsflesh
+
+# 요약에 쓸 LLM. 기본값은 Gemini 무료 티어(키만 있으면 과금 없음).
+# provider: openai_compatible (Gemini/Groq/OpenRouter/Ollama 등) | anthropic (유료) | none (LLM 없이, 완전 무료)
+llm:
+  provider: openai_compatible
+  model: gemini-3.8-flash
+  base_url: https://generativelanguage.googleapis.com/v1beta/openai/
+  api_key_env: GEMINI_API_KEY   # 이 이름의 환경변수에서 키를 읽음
+  # --- 다른 곳을 쓰려면 위 4줄을 바꾸세요 ---
+  # Groq:   base_url https://api.groq.com/openai/v1, api_key_env GROQ_API_KEY, model은 Groq 콘솔의 모델 목록 참고
+  # Ollama: base_url http://localhost:11434/v1 (내 PC에서만 가능, GitHub Actions에서는 불가)
+
+window_hours: 24        # 최근 몇 시간 기사만 볼지
+per_feed_limit: 40      # 매체당 최대 기사 수
+cluster_threshold: 0.30 # 높을수록 엄격하게 묶음 (0.2~0.45 사이에서 조정)
+min_sources: 2          # 최소 몇 개 매체가 다룬 사건만 보낼지 (수집함 항목은 예외)
+max_clusters: 8         # 하루 브리핑 사건 수
+chunk_size: 5           # LLM 호출 1회당 처리할 사건 수 (무료 티어 분당 한도에 걸리면 줄이세요)
+db_path: data/briefing.db
+use_inbox: true         # 봇 채팅에 보낸 메시지(인스타 소식 등)를 수집할지

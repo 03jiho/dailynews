@@ -1,0 +1,7 @@
+feedparser>=6.0
+requests>=2.31
+scikit-learn>=1.4
+pyyaml>=6.0
+python-dotenv>=1.0
+tzdata; sys_platform == "win32"  # Windows엔 시간대 DB가 없어 ZoneInfo("Asia/Seoul")가 실패함
+# Claude API(provider: anthropic)를 쓸 때만 추가로: pip install anthropic
